@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Interactive Homography DLT Playground</title>
+
+<style>
+  :root{
+    --blue:#1557c2;
+    --green:#15803d;
+    --orange:#ea580c;
+    --red:#dc2626;
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --line:#d7deea;
+    --text:#1e293b;
+    --muted:#64748b;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    font-family:"Segoe UI","Noto Sans TC",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+
+  header{
+    padding:22px 28px;
+    text-align:center;
+    background:linear-gradient(135deg,#0b3a8f,#1d6eea);
+    color:white;
+  }
+
+  header h1{
+    margin:0;
+    font-size:34px;
+  }
+
+  header p{
+    margin:8px 0 0;
+    font-size:16px;
+    opacity:.95;
+  }
+
+  .container{
+    max-width:1500px;
+    margin:auto;
+    padding:18px;
+    display:grid;
+    grid-template-columns:360px 1fr;
+    gap:18px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    box-shadow:0 6px 18px rgba(20,40,80,.08);
+  }
+
+  .panel{
+    padding:18px;
+  }
+
+  h2{
+    margin:0 0 14px;
+    color:var(--blue);
+    font-size:22px;
+  }
+
+  h3{
+    margin:18px 0 10px;
+    font-size:18px;
+    color:#0f172a;
+  }
+
+  .upload-box{
+    border:2px dashed #9db7e8;
+    border-radius:14px;
+    padding:14px;
+    background:#f8fbff;
+    text-align:center;
+  }
+
+  input[type="file"]{
+    width:100%;
+  }
+
+  label{
+    font-weight:700;
+    font-size:14px;
+  }
+
+  input[type="number"],
+  select{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    font-size:15px;
+    margin-top:6px;
+    background:white;
+  }
+
+  .check-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#f8fafc;
+    font-weight:700;
+    margin-top:8px;
+  }
+
+  .check-row input{
+    transform:scale(1.15);
+  }
+
+  button{
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:12px 10px;
+    color:white;
+    background:var(--blue);
+    font-size:16px;
+    font-weight:800;
+    cursor:pointer;
+    margin-top:10px;
+  }
+
+  button.secondary{
+    background:#e5e7eb;
+    color:#334155;
+  }
+
+  button.green{
+    background:#0f766e;
+  }
+
+  button.orange{
+    background:var(--orange);
+  }
+
+  .small-note{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.55;
+    margin-top:6px;
+  }
+
+  .main{
+    display:grid;
+    gap:18px;
+  }
+
+  .canvas-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+
+  .canvas-card{
+    padding:16px;
+  }
+
+  .canvas-title{
+    text-align:center;
+    color:var(--blue);
+    font-weight:900;
+    font-size:25px;
+    margin-bottom:12px;
+  }
+
+  .canvas-holder{
+    border:1px solid var(--line);
+    background:#f8fafc;
+    border-radius:14px;
+    padding:10px;
+    overflow:auto;
+    min-height:320px;
+  }
+
+  canvas{
+    display:block;
+    max-width:100%;
+    height:auto;
+    margin:auto;
+    border-radius:10px;
+    background:white;
+  }
+
+  .matrix-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+  }
+
+  .matrix-box{
+    padding:16px;
+  }
+
+  .matrix-title{
+    font-size:20px;
+    color:var(--blue);
+    font-weight:900;
+    margin-bottom:10px;
+  }
+
+  pre{
+    background:#f8fafc;
+    border:1px dashed #cbd5e1;
+    border-radius:12px;
+    padding:14px;
+    overflow:auto;
+    font-size:15px;
+    line-height:1.5;
+    margin:0;
+  }
+
+  .explain{
+    padding:16px 18px;
+    background:#fff8df;
+    border:2px solid #f6c453;
+    border-radius:16px;
+    line-height:1.75;
+    font-size:16px;
+  }
+
+  .explain b{
+    color:#b45309;
+  }
+
+  .point-list{
+    display:grid;
+    gap:8px;
+    margin-top:8px;
+  }
+
+  .point-row{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    font-size:13px;
+    background:#f8fafc;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:8px 10px;
+  }
+
+  .status{
+    margin-top:10px;
+    padding:10px;
+    border-radius:10px;
+    background:#eef6ff;
+    color:#1557c2;
+    font-weight:700;
+    font-size:14px;
+    line-height:1.5;
+  }
+
+  @media(max-width:1100px){
+    .container{
+      grid-template-columns:1fr;
+    }
+
+    .canvas-grid,
+    .matrix-grid{
+      grid-template-columns:1fr;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Interactive Homography DLT Playground</h1>
+  <p>Drag 4 corners → solve H by DLT → inverse warp + resampling</p>
+</header>
+
+<div class="container">
+
+  <aside class="card panel">
+
+    <h2>① Load Image</h2>
+    <div class="upload-box">
+      <input id="fileInput" type="file" accept="image/*" />
+      <div class="small-note">
+        The image is processed locally in your browser.
+      </div>
+    </div>
+
+    <h3>② Output Size</h3>
+
+    <label>
+      Output Width
+      <input id="outWidth" type="number" min="50" max="2400" value="900" />
+    </label>
+
+    <br><br>
+
+    <label>
+      Output Height
+      <input id="outHeight" type="number" min="50" max="2400" value="500" />
+    </label>
+
+    <label class="check-row">
+      <input id="autoAspect" type="checkbox" checked />
+      Auto aspect ratio from 4 corners
+    </label>
+
+    <div class="small-note">
+      建議名片或文件不要硬拉成直式。開啟後，程式會依照四邊長度自動估算高度。
+    </div>
+
+    <h3>③ Resampling</h3>
+
+    <label>
+      Interpolation Mode
+      <select id="interpMode">
+        <option value="bilinear" selected>Bilinear interpolation</option>
+        <option value="nearest">Nearest neighbor</option>
+      </select>
+    </label>
+
+    <label class="check-row">
+      <input id="sharpenToggle" type="checkbox" checked />
+      Sharpen text after warp
+    </label>
+
+    <div class="small-note">
+      Bilinear 較平滑；Nearest 較硬。文字若太糊，可開啟 Sharpen，但原圖失焦仍無法完全恢復。
+    </div>
+
+    <button onclick="updateWarp()">Update Rectification</button>
+    <button class="secondary" onclick="resetPoints()">Reset 4 Corners</button>
+    <button class="orange" onclick="autoDocumentPreset()">Use Document Preset</button>
+    <button class="green" onclick="downloadWarped()">Download Rectified PNG</button>
+
+    <h3>④ Source Points</h3>
+    <div class="small-note">
+      Drag the 4 colored points on the source image.
+      JavaScript will automatically solve the homography matrix H.
+    </div>
+
+    <div class="point-list" id="pointList"></div>
+
+    <div class="status" id="statusBox">
+      Please load an image first.
+    </div>
+
+  </aside>
+
+  <main class="main">
+
+    <section class="canvas-grid">
+
+      <div class="card canvas-card">
+        <div class="canvas-title">Source Image: Drag 4 Corners</div>
+        <div class="canvas-holder">
+          <canvas id="sourceCanvas" width="640" height="420"></canvas>
+        </div>
+      </div>
+
+      <div class="card canvas-card">
+        <div class="canvas-title">Rectified / Warped Image</div>
+        <div class="canvas-holder">
+          <canvas id="outputCanvas" width="900" height="500"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="matrix-grid">
+
+      <div class="card matrix-box">
+        <div class="matrix-title">Homography Matrix H</div>
+        <pre id="hMatrix">H will appear here.</pre>
+      </div>
+
+      <div class="card matrix-box">
+        <div class="matrix-title">Inverse Matrix H⁻¹</div>
+        <pre id="invMatrix">H⁻¹ will appear here.</pre>
+      </div>
+
+    </section>
+
+    <section class="explain">
+      💡 <b>Why did the text become blurry?</b><br>
+      If the selected card area is small in the source image, rectification enlarges it.
+      Enlarging low-resolution text makes blur more visible.
+      This version preserves the card aspect ratio automatically and adds an optional sharpening step.
+      <br><br>
+      <b>Recommended shooting tips:</b>
+      move the camera closer, focus on the text, use uniform lighting, and make the card occupy more pixels in the source image.
+    </section>
+
+  </main>
+</div>
+
+<script>
+const fileInput = document.getElementById("fileInput");
+const sourceCanvas = document.getElementById("sourceCanvas");
+const outputCanvas = document.getElementById("outputCanvas");
+const srcCtx = sourceCanvas.getContext("2d");
+const outCtx = outputCanvas.getContext("2d");
+
+const hMatrixEl = document.getElementById("hMatrix");
+const invMatrixEl = document.getElementById("invMatrix");
+const pointListEl = document.getElementById("pointList");
+const statusBox = document.getElementById("statusBox");
+
+let imageLoaded = false;
+let sourceImageCanvas = document.createElement("canvas");
+let sourceImageCtx = sourceImageCanvas.getContext("2d");
+
+let draggingPoint = -1;
+
+let points = [
+  {x:120, y:80,  color:"#ef4444", name:"P1 top-left"},
+  {x:520, y:90,  color:"#22c55e", name:"P2 top-right"},
+  {x:540, y:330, color:"#3b82f6", name:"P3 bottom-right"},
+  {x:100, y:350, color:"#facc15", name:"P4 bottom-left"}
+];
+
+fileInput.addEventListener("change", handleImageUpload);
+
+sourceCanvas.addEventListener("mousedown", startDrag);
+sourceCanvas.addEventListener("mousemove", dragPoint);
+sourceCanvas.addEventListener("mouseup", endDrag);
+sourceCanvas.addEventListener("mouseleave", endDrag);
+
+sourceCanvas.addEventListener("touchstart", startDragTouch, {passive:false});
+sourceCanvas.addEventListener("touchmove", dragPointTouch, {passive:false});
+sourceCanvas.addEventListener("touchend", endDrag);
+
+document.getElementById("outWidth").addEventListener("input", updateWarp);
+document.getElementById("outHeight").addEventListener("input", updateWarp);
+document.getElementById("autoAspect").addEventListener("change", updateWarp);
+document.getElementById("interpMode").addEventListener("change", updateWarp);
+document.getElementById("sharpenToggle").addEventListener("change", updateWarp);
+
+initBlank();
+
+function initBlank(){
+  srcCtx.fillStyle = "#f8fafc";
+  srcCtx.fillRect(0,0,sourceCanvas.width,sourceCanvas.height);
+  srcCtx.fillStyle = "#334155";
+  srcCtx.font = "bold 26px Segoe UI";
+  srcCtx.textAlign = "center";
+  srcCtx.fillText("Please load an image", sourceCanvas.width/2, sourceCanvas.height/2);
+  srcCtx.textAlign = "left";
+
+  outCtx.fillStyle = "#f8fafc";
+  outCtx.fillRect(0,0,outputCanvas.width,outputCanvas.height);
+  outCtx.fillStyle = "#334155";
+  outCtx.font = "bold 24px Segoe UI";
+  outCtx.textAlign = "center";
+  outCtx.fillText("Rectified image will appear here", outputCanvas.width/2, outputCanvas.height/2);
+  outCtx.textAlign = "left";
+
+  updatePointList();
+}
+
+function handleImageUpload(e){
+  const file = e.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = ev => {
+    const img = new Image();
+
+    img.onload = () => {
+      const maxW = 760;
+      const maxH = 520;
+      const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+
+      sourceCanvas.width = w;
+      sourceCanvas.height = h;
+
+      sourceImageCanvas.width = w;
+      sourceImageCanvas.height = h;
+      sourceImageCtx.clearRect(0,0,w,h);
+      sourceImageCtx.drawImage(img,0,0,w,h);
+
+      imageLoaded = true;
+
+      resetPoints();
+      statusBox.textContent = "Image loaded. Drag the 4 corner points to define the source quadrilateral.";
+    };
+
+    img.src = ev.target.result;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+function resetPoints(){
+  const w = sourceCanvas.width;
+  const h = sourceCanvas.height;
+
+  points = [
+    {x:w*0.20, y:h*0.18, color:"#ef4444", name:"P1 top-left"},
+    {x:w*0.80, y:h*0.18, color:"#22c55e", name:"P2 top-right"},
+    {x:w*0.82, y:h*0.82, color:"#3b82f6", name:"P3 bottom-right"},
+    {x:w*0.18, y:h*0.82, color:"#facc15", name:"P4 bottom-left"}
+  ];
+
+  drawSource();
+  updateWarp();
+}
+
+function autoDocumentPreset(){
+  const w = sourceCanvas.width;
+  const h = sourceCanvas.height;
+
+  points = [
+    {x:w*0.24, y:h*0.14, color:"#ef4444", name:"P1 top-left"},
+    {x:w*0.76, y:h*0.20, color:"#22c55e", name:"P2 top-right"},
+    {x:w*0.84, y:h*0.86, color:"#3b82f6", name:"P3 bottom-right"},
+    {x:w*0.15, y:h*0.78, color:"#facc15", name:"P4 bottom-left"}
+  ];
+
+  drawSource();
+  updateWarp();
+}
+
+function drawSource(){
+  srcCtx.clearRect(0,0,sourceCanvas.width,sourceCanvas.height);
+
+  if(imageLoaded){
+    srcCtx.drawImage(sourceImageCanvas,0,0);
+  }else{
+    srcCtx.fillStyle = "#f8fafc";
+    srcCtx.fillRect(0,0,sourceCanvas.width,sourceCanvas.height);
+  }
+
+  drawQuadrilateral();
+  drawPoints();
+  updatePointList();
+}
+
+function drawQuadrilateral(){
+  srcCtx.save();
+
+  srcCtx.lineWidth = 4;
+  srcCtx.strokeStyle = "rgba(255,255,255,0.95)";
+  srcCtx.beginPath();
+  srcCtx.moveTo(points[0].x, points[0].y);
+  for(let i=1;i<4;i++){
+    srcCtx.lineTo(points[i].x, points[i].y);
+  }
+  srcCtx.closePath();
+  srcCtx.stroke();
+
+  srcCtx.lineWidth = 2;
+  srcCtx.strokeStyle = "#0f172a";
+  srcCtx.setLineDash([8,6]);
+  srcCtx.beginPath();
+  srcCtx.moveTo(points[0].x, points[0].y);
+  for(let i=1;i<4;i++){
+    srcCtx.lineTo(points[i].x, points[i].y);
+  }
+  srcCtx.closePath();
+  srcCtx.stroke();
+
+  srcCtx.restore();
+}
+
+function drawPoints(){
+  srcCtx.save();
+
+  points.forEach((p, i) => {
+    srcCtx.beginPath();
+    srcCtx.arc(p.x, p.y, 11, 0, Math.PI*2);
+    srcCtx.fillStyle = p.color;
+    srcCtx.fill();
+    srcCtx.lineWidth = 4;
+    srcCtx.strokeStyle = "white";
+    srcCtx.stroke();
+
+    srcCtx.fillStyle = "white";
+    srcCtx.font = "bold 13px Segoe UI";
+    srcCtx.textAlign = "center";
+    srcCtx.textBaseline = "middle";
+    srcCtx.fillText(String(i+1), p.x, p.y);
+
+    srcCtx.textAlign = "left";
+    srcCtx.textBaseline = "alphabetic";
+    srcCtx.font = "bold 15px Segoe UI";
+    srcCtx.fillStyle = "#0f172a";
+    srcCtx.strokeStyle = "white";
+    srcCtx.lineWidth = 4;
+    srcCtx.strokeText(`P${i+1}`, p.x + 14, p.y - 14);
+    srcCtx.fillText(`P${i+1}`, p.x + 14, p.y - 14);
+  });
+
+  srcCtx.restore();
+}
+
+function updatePointList(){
+  pointListEl.innerHTML = "";
+
+  points.forEach((p, i) => {
+    const row = document.createElement("div");
+    row.className = "point-row";
+    row.innerHTML = `
+      <b style="color:${p.color};">P${i+1}</b>
+      <span>x=${p.x.toFixed(1)}, y=${p.y.toFixed(1)}</span>
+    `;
+    pointListEl.appendChild(row);
+  });
+}
+
+function getCanvasMousePos(event){
+  const rect = sourceCanvas.getBoundingClientRect();
+  const scaleX = sourceCanvas.width / rect.width;
+  const scaleY = sourceCanvas.height / rect.height;
+
+  return {
+    x:(event.clientX - rect.left) * scaleX,
+    y:(event.clientY - rect.top) * scaleY
+  };
+}
+
+function getCanvasTouchPos(event){
+  const touch = event.touches[0];
+  const rect = sourceCanvas.getBoundingClientRect();
+  const scaleX = sourceCanvas.width / rect.width;
+  const scaleY = sourceCanvas.height / rect.height;
+
+  return {
+    x:(touch.clientX - rect.left) * scaleX,
+    y:(touch.clientY - rect.top) * scaleY
+  };
+}
+
+function startDrag(event){
+  const pos = getCanvasMousePos(event);
+  draggingPoint = findNearestPoint(pos.x, pos.y);
+}
+
+function dragPoint(event){
+  if(draggingPoint < 0) return;
+
+  const pos = getCanvasMousePos(event);
+  movePoint(draggingPoint, pos.x, pos.y);
+}
+
+function startDragTouch(event){
+  event.preventDefault();
+  const pos = getCanvasTouchPos(event);
+  draggingPoint = findNearestPoint(pos.x, pos.y);
+}
+
+function dragPointTouch(event){
+  event.preventDefault();
+  if(draggingPoint < 0) return;
+
+  const pos = getCanvasTouchPos(event);
+  movePoint(draggingPoint, pos.x, pos.y);
+}
+
+function endDrag(){
+  draggingPoint = -1;
+}
+
+function findNearestPoint(x,y){
+  let best = -1;
+  let bestDist = 999999;
+
+  points.forEach((p,i) => {
+    const dx = p.x - x;
+    const dy = p.y - y;
+    const d = Math.sqrt(dx*dx + dy*dy);
+
+    if(d < bestDist){
+      bestDist = d;
+      best = i;
+    }
+  });
+
+  return bestDist <= 28 ? best : -1;
+}
+
+function movePoint(index, x, y){
+  points[index].x = clampNumber(x, 0, sourceCanvas.width);
+  points[index].y = clampNumber(y, 0, sourceCanvas.height);
+
+  drawSource();
+  updateWarp();
+}
+
+function estimateOutputSize(){
+  const widthInput = document.getElementById("outWidth");
+  const heightInput = document.getElementById("outHeight");
+  const autoAspect = document.getElementById("autoAspect").checked;
+
+  let outW = clampInt(parseInt(widthInput.value || "900"), 50, 2400);
+  let outH = clampInt(parseInt(heightInput.value || "500"), 50, 2400);
+
+  if(autoAspect){
+    const top = distance(points[0], points[1]);
+    const bottom = distance(points[3], points[2]);
+    const left = distance(points[0], points[3]);
+    const right = distance(points[1], points[2]);
+
+    const avgW = (top + bottom) / 2;
+    const avgH = (left + right) / 2;
+
+    if(avgH > 1){
+      const aspect = avgW / avgH;
+      outH = Math.round(outW / aspect);
+      outH = clampInt(outH, 50, 2400);
+      heightInput.value = outH;
+    }
+  }
+
+  widthInput.value = outW;
+  heightInput.value = outH;
+
+  return {outW, outH};
+}
+
+function updateWarp(){
+  if(!imageLoaded){
+    drawSource();
+    return;
+  }
+
+  const {outW, outH} = estimateOutputSize();
+
+  outputCanvas.width = outW;
+  outputCanvas.height = outH;
+
+  const srcPts = points.map(p => ({x:p.x, y:p.y}));
+
+  const dstPts = [
+    {x:0, y:0},
+    {x:outW-1, y:0},
+    {x:outW-1, y:outH-1},
+    {x:0, y:outH-1}
+  ];
+
+  const H = computeHomographyDLT(srcPts, dstPts);
+  const invH = H ? invert3x3(H) : null;
+
+  if(!H || !invH){
+    statusBox.textContent = "Could not solve H. Please make sure the four points form a valid quadrilateral.";
+    return;
+  }
+
+  renderWarpedImage(invH, outW, outH);
+
+  if(document.getElementById("sharpenToggle").checked){
+    applySharpen(outputCanvas);
+  }
+
+  hMatrixEl.textContent = formatMatrix(H);
+  invMatrixEl.textContent = formatMatrix(invH);
+
+  const aspectInfo = (outW / outH).toFixed(3);
+
+  statusBox.textContent =
+    `DLT solved H successfully. Output size = ${outW} × ${outH}, aspect = ${aspectInfo}. ` +
+    `Rendered by inverse warping and ${document.getElementById("interpMode").value} interpolation.`;
+}
+
+function computeHomographyDLT(src, dst){
+  const A = [];
+  const b = [];
+
+  for(let i=0; i<4; i++){
+    const x = src[i].x;
+    const y = src[i].y;
+    const u = dst[i].x;
+    const v = dst[i].y;
+
+    A.push([x, y, 1, 0, 0, 0, -u*x, -u*y]);
+    b.push(u);
+
+    A.push([0, 0, 0, x, y, 1, -v*x, -v*y]);
+    b.push(v);
+  }
+
+  const h = solveLinearSystem(A, b);
+
+  if(!h) return null;
+
+  return [
+    [h[0], h[1], h[2]],
+    [h[3], h[4], h[5]],
+    [h[6], h[7], 1]
+  ];
+}
+
+function solveLinearSystem(A, b){
+  const n = b.length;
+  const M = A.map((row, i) => [...row, b[i]]);
+
+  for(let col=0; col<n; col++){
+    let pivot = col;
+
+    for(let r=col+1; r<n; r++){
+      if(Math.abs(M[r][col]) > Math.abs(M[pivot][col])){
+        pivot = r;
+      }
+    }
+
+    if(Math.abs(M[pivot][col]) < 1e-12){
+      return null;
+    }
+
+    if(pivot !== col){
+      [M[pivot], M[col]] = [M[col], M[pivot]];
+    }
+
+    const div = M[col][col];
+
+    for(let c=col; c<=n; c++){
+      M[col][c] /= div;
+    }
+
+    for(let r=0; r<n; r++){
+      if(r === col) continue;
+
+      const factor = M[r][col];
+
+      for(let c=col; c<=n; c++){
+        M[r][c] -= factor * M[col][c];
+      }
+    }
+  }
+
+  return M.map(row => row[n]);
+}
+
+function invert3x3(M){
+  const a=M[0][0], b=M[0][1], c=M[0][2];
+  const d=M[1][0], e=M[1][1], f=M[1][2];
+  const g=M[2][0], h=M[2][1], i=M[2][2];
+
+  const A = e*i - f*h;
+  const B = -(d*i - f*g);
+  const C = d*h - e*g;
+
+  const D = -(b*i - c*h);
+  const E = a*i - c*g;
+  const F = -(a*h - b*g);
+
+  const G = b*f - c*e;
+  const H = -(a*f - c*d);
+  const I = a*e - b*d;
+
+  const det = a*A + b*B + c*C;
+
+  if(Math.abs(det) < 1e-12) return null;
+
+  return [
+    [A/det, D/det, G/det],
+    [B/det, E/det, H/det],
+    [C/det, F/det, I/det]
+  ];
+}
+
+function renderWarpedImage(invH, outW, outH){
+  const srcW = sourceImageCanvas.width;
+  const srcH = sourceImageCanvas.height;
+
+  const srcData = sourceImageCtx.getImageData(0,0,srcW,srcH);
+  const outData = outCtx.createImageData(outW,outH);
+  const interpMode = document.getElementById("interpMode").value;
+
+  for(let y=0; y<outH; y++){
+    for(let x=0; x<outW; x++){
+      const p = applyHomographyPoint(invH, x, y);
+
+      let color;
+
+      if(interpMode === "nearest"){
+        color = nearestSample(srcData, srcW, srcH, p.x, p.y);
+      }else{
+        color = bilinearSample(srcData, srcW, srcH, p.x, p.y);
+      }
+
+      const idx = (y*outW + x)*4;
+      outData.data[idx]   = color[0];
+      outData.data[idx+1] = color[1];
+      outData.data[idx+2] = color[2];
+      outData.data[idx+3] = color[3];
+    }
+  }
+
+  outCtx.putImageData(outData,0,0);
+}
+
+function applyHomographyPoint(H, x, y){
+  const X = H[0][0]*x + H[0][1]*y + H[0][2];
+  const Y = H[1][0]*x + H[1][1]*y + H[1][2];
+  const W = H[2][0]*x + H[2][1]*y + H[2][2];
+
+  return {
+    x:X/W,
+    y:Y/W
+  };
+}
+
+function nearestSample(img, w, h, x, y){
+  const xi = Math.round(x);
+  const yi = Math.round(y);
+
+  if(xi < 0 || yi < 0 || xi >= w || yi >= h){
+    return [245,248,252,255];
+  }
+
+  return getPixel(img, w, xi, yi);
+}
+
+function bilinearSample(img, w, h, x, y){
+  if(x < 0 || y < 0 || x >= w-1 || y >= h-1){
+    return [245,248,252,255];
+  }
+
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const x1 = x0 + 1;
+  const y1 = y0 + 1;
+
+  const dx = x - x0;
+  const dy = y - y0;
+
+  const c00 = getPixel(img, w, x0, y0);
+  const c10 = getPixel(img, w, x1, y0);
+  const c01 = getPixel(img, w, x0, y1);
+  const c11 = getPixel(img, w, x1, y1);
+
+  const out = [0,0,0,255];
+
+  for(let k=0; k<4; k++){
+    const top = c00[k]*(1-dx) + c10[k]*dx;
+    const bottom = c01[k]*(1-dx) + c11[k]*dx;
+    out[k] = Math.round(top*(1-dy) + bottom*dy);
+  }
+
+  return out;
+}
+
+function getPixel(img, w, x, y){
+  const idx = (y*w + x)*4;
+  return [
+    img.data[idx],
+    img.data[idx+1],
+    img.data[idx+2],
+    img.data[idx+3]
+  ];
+}
+
+function applySharpen(canvas){
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+
+  const src = ctx.getImageData(0,0,w,h);
+  const dst = ctx.createImageData(w,h);
+
+  const s = src.data;
+  const d = dst.data;
+
+  const kernel = [
+     0, -1,  0,
+    -1,  5, -1,
+     0, -1,  0
+  ];
+
+  for(let y=0; y<h; y++){
+    for(let x=0; x<w; x++){
+      const idx = (y*w + x)*4;
+
+      if(x === 0 || y === 0 || x === w-1 || y === h-1){
+        d[idx] = s[idx];
+        d[idx+1] = s[idx+1];
+        d[idx+2] = s[idx+2];
+        d[idx+3] = s[idx+3];
+        continue;
+      }
+
+      let r=0, g=0, b=0;
+
+      let ki = 0;
+
+      for(let ky=-1; ky<=1; ky++){
+        for(let kx=-1; kx<=1; kx++){
+          const srcIdx = ((y+ky)*w + (x+kx))*4;
+          const kv = kernel[ki++];
+
+          r += s[srcIdx] * kv;
+          g += s[srcIdx+1] * kv;
+          b += s[srcIdx+2] * kv;
+        }
+      }
+
+      d[idx] = clamp255(r);
+      d[idx+1] = clamp255(g);
+      d[idx+2] = clamp255(b);
+      d[idx+3] = s[idx+3];
+    }
+  }
+
+  ctx.putImageData(dst,0,0);
+}
+
+function formatMatrix(M){
+  if(!M) return "Matrix cannot be computed.";
+
+  return M.map(row =>
+    "[ " + row.map(v => {
+      if(Math.abs(v) < 1e-10) v = 0;
+      return v.toFixed(6).padStart(12, " ");
+    }).join("  ") + " ]"
+  ).join("\n");
+}
+
+function downloadWarped(){
+  if(!imageLoaded){
+    alert("Please load an image first.");
+    return;
+  }
+
+  const a = document.createElement("a");
+  a.href = outputCanvas.toDataURL("image/png");
+  a.download = "rectified_homography_result.png";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+function distance(a,b){
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+function clampNumber(v,min,max){
+  return Math.max(min, Math.min(max, v));
+}
+
+function clampInt(v,min,max){
+  if(Number.isNaN(v)) return min;
+  return Math.max(min, Math.min(max, v));
+}
+
+function clamp255(v){
+  return Math.max(0, Math.min(255, Math.round(v)));
+}
+</script>
+
+</body>
+</html>
