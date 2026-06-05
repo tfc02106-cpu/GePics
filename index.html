@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Interactive Homography DLT Playground</title>
+<title>Image Augmentation Playground for Training</title>
 
 <style>
   :root{
     --blue:#1557c2;
     --green:#15803d;
     --orange:#ea580c;
-    --red:#dc2626;
+    --purple:#7e22ce;
+    --red:#b91c1c;
+    --teal:#0f766e;
     --bg:#f4f7fb;
     --card:#ffffff;
     --line:#d7deea;
@@ -28,7 +30,7 @@
   }
 
   header{
-    padding:22px 28px;
+    padding:24px 28px;
     text-align:center;
     background:linear-gradient(135deg,#0b3a8f,#1d6eea);
     color:white;
@@ -37,20 +39,21 @@
   header h1{
     margin:0;
     font-size:34px;
+    letter-spacing:.5px;
   }
 
   header p{
     margin:8px 0 0;
-    font-size:16px;
+    font-size:17px;
     opacity:.95;
   }
 
   .container{
-    max-width:1500px;
+    max-width:1600px;
     margin:auto;
     padding:18px;
     display:grid;
-    grid-template-columns:360px 1fr;
+    grid-template-columns:380px 1fr;
     gap:18px;
   }
 
@@ -71,38 +74,34 @@
     font-size:22px;
   }
 
-  h3{
-    margin:18px 0 10px;
-    font-size:18px;
-    color:#0f172a;
+  .sub-title{
+    margin-top:22px;
   }
 
   .upload-box{
     border:2px dashed #9db7e8;
     border-radius:14px;
-    padding:14px;
+    padding:16px;
     background:#f8fbff;
     text-align:center;
   }
 
   input[type="file"]{
     width:100%;
+    padding:8px;
   }
 
-  label{
-    font-weight:700;
-    font-size:14px;
+  .small-note{
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.5;
+    margin-top:4px;
   }
 
-  input[type="number"],
-  select{
-    width:100%;
-    padding:9px 10px;
-    border:1px solid var(--line);
-    border-radius:9px;
-    font-size:15px;
-    margin-top:6px;
-    background:white;
+  .transform-list{
+    display:grid;
+    gap:8px;
+    margin-top:10px;
   }
 
   .check-row{
@@ -114,21 +113,51 @@
     border-radius:10px;
     background:#f8fafc;
     font-weight:700;
-    margin-top:8px;
   }
 
   .check-row input{
-    transform:scale(1.15);
+    transform:scale(1.12);
+  }
+
+  .t1{ color:var(--blue); }
+  .t2{ color:var(--green); }
+  .t3{ color:var(--orange); }
+  .t4{ color:var(--purple); }
+  .t5{ color:var(--red); }
+
+  .control-group{
+    margin-bottom:15px;
+  }
+
+  label.param-label{
+    display:flex;
+    justify-content:space-between;
+    font-weight:700;
+    font-size:14px;
+    margin-bottom:6px;
+  }
+
+  input[type="range"]{
+    width:100%;
+    accent-color:var(--blue);
+  }
+
+  input[type="number"]{
+    width:100%;
+    padding:10px 10px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    font-size:15px;
   }
 
   button{
     width:100%;
     border:none;
     border-radius:12px;
-    padding:12px 10px;
+    padding:13px 12px;
     color:white;
     background:var(--blue);
-    font-size:16px;
+    font-size:17px;
     font-weight:800;
     cursor:pointer;
     margin-top:10px;
@@ -139,19 +168,12 @@
     color:#334155;
   }
 
-  button.green{
-    background:#0f766e;
+  button.zip{
+    background:var(--teal);
   }
 
-  button.orange{
-    background:var(--orange);
-  }
-
-  .small-note{
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.55;
-    margin-top:6px;
+  button:hover{
+    filter:brightness(.97);
   }
 
   .main{
@@ -159,68 +181,40 @@
     gap:18px;
   }
 
-  .canvas-grid{
+  .preview-grid{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:18px;
   }
 
-  .canvas-card{
+  .canvas-wrap{
     padding:16px;
   }
 
   .canvas-title{
     text-align:center;
-    color:var(--blue);
-    font-weight:900;
-    font-size:25px;
     margin-bottom:12px;
+    color:var(--blue);
+    font-size:28px;
+    font-weight:900;
   }
 
   .canvas-holder{
-    border:1px solid var(--line);
-    background:#f8fafc;
-    border-radius:14px;
-    padding:10px;
     overflow:auto;
-    min-height:320px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:#f8fafc;
+    padding:10px;
+    min-height:280px;
   }
 
-  canvas{
+  canvas.main-canvas{
     display:block;
     max-width:100%;
     height:auto;
-    margin:auto;
-    border-radius:10px;
     background:white;
-  }
-
-  .matrix-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:18px;
-  }
-
-  .matrix-box{
-    padding:16px;
-  }
-
-  .matrix-title{
-    font-size:20px;
-    color:var(--blue);
-    font-weight:900;
-    margin-bottom:10px;
-  }
-
-  pre{
-    background:#f8fafc;
-    border:1px dashed #cbd5e1;
-    border-radius:12px;
-    padding:14px;
-    overflow:auto;
-    font-size:15px;
-    line-height:1.5;
-    margin:0;
+    border-radius:10px;
+    margin:auto;
   }
 
   .explain{
@@ -236,41 +230,82 @@
     color:#b45309;
   }
 
-  .point-list{
-    display:grid;
-    gap:8px;
-    margin-top:8px;
-  }
-
-  .point-row{
+  .result-header{
     display:flex;
     justify-content:space-between;
-    gap:8px;
-    font-size:13px;
-    background:#f8fafc;
+    align-items:center;
+    gap:12px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+
+  .result-header h2{
+    margin:0;
+  }
+
+  .result-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:16px;
+  }
+
+  .result-card{
     border:1px solid var(--line);
-    border-radius:10px;
-    padding:8px 10px;
+    border-radius:14px;
+    overflow:hidden;
+    background:white;
   }
 
-  .status{
-    margin-top:10px;
+  .result-image-wrap{
+    background:#f8fafc;
     padding:10px;
-    border-radius:10px;
-    background:#eef6ff;
-    color:#1557c2;
-    font-weight:700;
-    font-size:14px;
-    line-height:1.5;
+    border-bottom:1px solid var(--line);
+    overflow:auto;
   }
 
-  @media(max-width:1100px){
+  .result-card canvas{
+    display:block;
+    width:100%;
+    height:auto;
+    background:white;
+    border-radius:8px;
+  }
+
+  .result-info{
+    padding:10px 12px 12px;
+  }
+
+  .result-title{
+    font-weight:900;
+    margin-bottom:6px;
+    font-size:16px;
+  }
+
+  .result-meta{
+    font-size:13px;
+    color:#475569;
+    line-height:1.45;
+    min-height:92px;
+    white-space:pre-wrap;
+  }
+
+  .download-btn{
+    display:inline-block;
+    margin-top:8px;
+    padding:7px 10px;
+    border-radius:8px;
+    background:var(--teal);
+    color:white;
+    text-decoration:none;
+    font-size:13px;
+    font-weight:800;
+  }
+
+  @media(max-width:1150px){
     .container{
       grid-template-columns:1fr;
     }
-
-    .canvas-grid,
-    .matrix-grid{
+    .preview-grid{
       grid-template-columns:1fr;
     }
   }
@@ -280,572 +315,819 @@
 <body>
 
 <header>
-  <h1>Interactive Homography DLT Playground</h1>
-  <p>Drag 4 corners → solve H by DLT → inverse warp + resampling</p>
+  <h1>Image Augmentation Playground</h1>
+  <p>幾何變換 + 光度變換 + 光源方向變換，一次產生 50 張訓練用影像</p>
 </header>
 
 <div class="container">
 
   <aside class="card panel">
 
-    <h2>① Load Image</h2>
+    <h2>① 載入照片</h2>
     <div class="upload-box">
       <input id="fileInput" type="file" accept="image/*" />
-      <div class="small-note">
-        The image is processed locally in your browser.
-      </div>
+      <div class="small-note">照片會在瀏覽器本機處理，不會上傳。</div>
     </div>
 
-    <h3>② Output Size</h3>
-
-    <label>
-      Output Width
-      <input id="outWidth" type="number" min="50" max="2400" value="900" />
-    </label>
-
-    <br><br>
-
-    <label>
-      Output Height
-      <input id="outHeight" type="number" min="50" max="2400" value="500" />
-    </label>
+    <h2 class="sub-title">② Geometry 幾何變換</h2>
 
     <label class="check-row">
-      <input id="autoAspect" type="checkbox" checked />
-      Auto aspect ratio from 4 corners
+      <input id="selectAll" type="checkbox" />
+      <span>全部選擇</span>
     </label>
 
-    <div class="small-note">
-      建議名片或文件不要硬拉成直式。開啟後，程式會依照四邊長度自動估算高度。
+    <div class="transform-list">
+      <label class="check-row t1">
+        <input class="transform-check" type="checkbox" value="translation" />
+        Translation 平移
+      </label>
+
+      <label class="check-row t2">
+        <input class="transform-check" type="checkbox" value="euclidean" />
+        Euclidean 歐氏變換
+      </label>
+
+      <label class="check-row t3">
+        <input class="transform-check" type="checkbox" value="similarity" />
+        Similarity 相似變換
+      </label>
+
+      <label class="check-row t4">
+        <input class="transform-check" type="checkbox" value="affine" />
+        Affine 仿射變換
+      </label>
+
+      <label class="check-row t5">
+        <input class="transform-check" type="checkbox" value="projective" />
+        Projective 投影變換
+      </label>
     </div>
 
-    <h3>③ Resampling</h3>
+    <h2 class="sub-title">③ Geometry 參數範圍</h2>
 
-    <label>
-      Interpolation Mode
-      <select id="interpMode">
-        <option value="bilinear" selected>Bilinear interpolation</option>
-        <option value="nearest">Nearest neighbor</option>
-      </select>
-    </label>
+    <div class="control-group">
+      <label class="param-label">
+        Translation 平移範圍
+        <span id="transVal">40 px</span>
+      </label>
+      <input id="transRange" type="range" min="0" max="220" step="5" value="40" />
+      <div class="small-note">tx, ty 的隨機範圍：±此像素值。</div>
+    </div>
+
+    <div class="control-group">
+      <label class="param-label">
+        Rotation 旋轉範圍
+        <span id="rotVal">20°</span>
+      </label>
+      <input id="rotRange" type="range" min="0" max="180" step="1" value="20" />
+      <div class="small-note">旋轉角度 θ 的隨機範圍：±此角度。</div>
+    </div>
+
+    <div class="control-group">
+      <label class="param-label">
+        Scale 縮放範圍
+        <span id="scaleVal">0.80 ~ 1.20</span>
+      </label>
+      <input id="scaleMin" type="range" min="0.3" max="1.5" step="0.05" value="0.80" />
+      <input id="scaleMax" type="range" min="0.6" max="2.5" step="0.05" value="1.20" />
+      <div class="small-note">Similarity 用等比縮放；Affine / Projective 可搭配不同 x/y 尺度。</div>
+    </div>
+
+    <div class="control-group">
+      <label class="param-label">
+        Shear 剪切範圍
+        <span id="shearVal">0.20</span>
+      </label>
+      <input id="shearRange" type="range" min="0" max="1.2" step="0.05" value="0.20" />
+      <div class="small-note">主要用於 Affine / Projective。</div>
+    </div>
+
+    <div class="control-group">
+      <label class="param-label">
+        Perspective 透視強度
+        <span id="perspVal">0.0005</span>
+      </label>
+      <input id="perspRange" type="range" min="0" max="0.004" step="0.0001" value="0.0005" />
+      <div class="small-note">主要用於 Projective。</div>
+    </div>
+
+    <h2 class="sub-title">④ Photometric 光度變換</h2>
 
     <label class="check-row">
-      <input id="sharpenToggle" type="checkbox" checked />
-      Sharpen text after warp
+      <input id="enablePhotometric" type="checkbox" />
+      <span>啟用 Photometric</span>
     </label>
 
-    <div class="small-note">
-      Bilinear 較平滑；Nearest 較硬。文字若太糊，可開啟 Sharpen，但原圖失焦仍無法完全恢復。
+    <div class="control-group">
+      <label class="param-label">
+        Brightness 亮度
+        <span id="brightnessVal">±30</span>
+      </label>
+      <input id="brightnessRange" type="range" min="0" max="100" step="1" value="30" />
+      <div class="small-note">隨機增加或降低整體亮度。</div>
     </div>
 
-    <button onclick="updateWarp()">Update Rectification</button>
-    <button class="secondary" onclick="resetPoints()">Reset 4 Corners</button>
-    <button class="orange" onclick="autoDocumentPreset()">Use Document Preset</button>
-    <button class="green" onclick="downloadWarped()">Download Rectified PNG</button>
-
-    <h3>④ Source Points</h3>
-    <div class="small-note">
-      Drag the 4 colored points on the source image.
-      JavaScript will automatically solve the homography matrix H.
+    <div class="control-group">
+      <label class="param-label">
+        Contrast 對比
+        <span id="contrastVal">0.75 ~ 1.35</span>
+      </label>
+      <input id="contrastMin" type="range" min="0.3" max="1.2" step="0.05" value="0.75" />
+      <input id="contrastMax" type="range" min="0.8" max="2.5" step="0.05" value="1.35" />
+      <div class="small-note">對比越大，亮暗差異越明顯。</div>
     </div>
 
-    <div class="point-list" id="pointList"></div>
-
-    <div class="status" id="statusBox">
-      Please load an image first.
+    <div class="control-group">
+      <label class="param-label">
+        Gamma 伽瑪
+        <span id="gammaVal">0.70 ~ 1.50</span>
+      </label>
+      <input id="gammaMin" type="range" min="0.3" max="1.5" step="0.05" value="0.70" />
+      <input id="gammaMax" type="range" min="0.8" max="3.0" step="0.05" value="1.50" />
+      <div class="small-note">Gamma 可模擬曝光曲線變化。</div>
     </div>
 
+    <h2 class="sub-title">⑤ Lighting 光源方向變換</h2>
+
+    <label class="check-row">
+      <input id="enableLighting" type="checkbox" />
+      <span>啟用 Lighting</span>
+    </label>
+
+    <div class="transform-list">
+      <label class="check-row">
+        <input class="lighting-check" type="checkbox" value="left" />
+        Left light 左側打光
+      </label>
+
+      <label class="check-row">
+        <input class="lighting-check" type="checkbox" value="right" />
+        Right light 右側打光
+      </label>
+
+      <label class="check-row">
+        <input class="lighting-check" type="checkbox" value="top" />
+        Top light 上方打光
+      </label>
+
+      <label class="check-row">
+        <input class="lighting-check" type="checkbox" value="bottom" />
+        Bottom light 下方打光
+      </label>
+
+      <label class="check-row">
+        <input class="lighting-check" type="checkbox" value="vignette" />
+        Vignette 暗角
+      </label>
+    </div>
+
+    <div class="control-group" style="margin-top:14px;">
+      <label class="param-label">
+        Lighting strength 光源強度
+        <span id="lightStrengthVal">0.45</span>
+      </label>
+      <input id="lightStrengthRange" type="range" min="0" max="1" step="0.05" value="0.45" />
+      <div class="small-note">數值越大，方向光與暗角越明顯。</div>
+    </div>
+
+    <h2 class="sub-title">⑥ 輸出設定</h2>
+
+    <div class="control-group">
+      <label class="param-label">
+        輸出張數
+      </label>
+      <input id="countInput" type="number" min="1" max="200" value="50" />
+      <div class="small-note">預設 50 張，適合快速建立訓練資料。</div>
+    </div>
+
+    <button id="generateBtn">產生變換照片</button>
+    <button class="secondary" id="clearBtn">清除結果</button>
+    <button class="zip" id="downloadZipBtn">下載全部 ZIP</button>
   </aside>
 
   <main class="main">
 
-    <section class="canvas-grid">
-
-      <div class="card canvas-card">
-        <div class="canvas-title">Source Image: Drag 4 Corners</div>
+    <section class="preview-grid">
+      <div class="card canvas-wrap">
+        <div class="canvas-title">原始照片</div>
         <div class="canvas-holder">
-          <canvas id="sourceCanvas" width="640" height="420"></canvas>
+          <canvas id="originalCanvas" class="main-canvas" width="720" height="420"></canvas>
         </div>
       </div>
 
-      <div class="card canvas-card">
-        <div class="canvas-title">Rectified / Warped Image</div>
+      <div class="card canvas-wrap">
+        <div class="canvas-title">單張預覽</div>
         <div class="canvas-holder">
-          <canvas id="outputCanvas" width="900" height="500"></canvas>
+          <canvas id="previewCanvas" class="main-canvas" width="720" height="420"></canvas>
         </div>
       </div>
-
-    </section>
-
-    <section class="matrix-grid">
-
-      <div class="card matrix-box">
-        <div class="matrix-title">Homography Matrix H</div>
-        <pre id="hMatrix">H will appear here.</pre>
-      </div>
-
-      <div class="card matrix-box">
-        <div class="matrix-title">Inverse Matrix H⁻¹</div>
-        <pre id="invMatrix">H⁻¹ will appear here.</pre>
-      </div>
-
     </section>
 
     <section class="explain">
-      💡 <b>Why did the text become blurry?</b><br>
-      If the selected card area is small in the source image, rectification enlarges it.
-      Enlarging low-resolution text makes blur more visible.
-      This version preserves the card aspect ratio automatically and adds an optional sharpening step.
-      <br><br>
-      <b>Recommended shooting tips:</b>
-      move the camera closer, focus on the text, use uniform lighting, and make the card occupy more pixels in the source image.
+      💡 <b>教學 / 訓練資料重點：</b>
+      Geometry 幾何變換會改變影像的位置、角度、尺度、剪切與透視；
+      Photometric 光度變換會改變亮度、對比與 Gamma；
+      Lighting 光源方向變換可模擬左光、右光、上光、下光與暗角。
+      <br>
+      <b>AOI / 視覺訓練觀念：</b>
+      真實工廠影像通常同時包含姿態變化與打光差異，因此資料擴增最好同時涵蓋幾何、亮度與照明變異。
+      <br>
+      <b>目前設定：</b> 幾何變換預設不勾選；輸出張數預設為 50 張。
+    </section>
+
+    <section class="card panel">
+      <div class="result-header">
+        <h2>輸出結果</h2>
+        <span class="small-note">每張圖可單獨下載 PNG，也可一次下載 ZIP</span>
+      </div>
+      <div id="resultGrid" class="result-grid"></div>
     </section>
 
   </main>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
 <script>
 const fileInput = document.getElementById("fileInput");
-const sourceCanvas = document.getElementById("sourceCanvas");
-const outputCanvas = document.getElementById("outputCanvas");
-const srcCtx = sourceCanvas.getContext("2d");
-const outCtx = outputCanvas.getContext("2d");
+const originalCanvas = document.getElementById("originalCanvas");
+const previewCanvas = document.getElementById("previewCanvas");
+const resultGrid = document.getElementById("resultGrid");
 
-const hMatrixEl = document.getElementById("hMatrix");
-const invMatrixEl = document.getElementById("invMatrix");
-const pointListEl = document.getElementById("pointList");
-const statusBox = document.getElementById("statusBox");
+const transRange = document.getElementById("transRange");
+const rotRange = document.getElementById("rotRange");
+const scaleMin = document.getElementById("scaleMin");
+const scaleMax = document.getElementById("scaleMax");
+const shearRange = document.getElementById("shearRange");
+const perspRange = document.getElementById("perspRange");
+const countInput = document.getElementById("countInput");
 
-let imageLoaded = false;
-let sourceImageCanvas = document.createElement("canvas");
-let sourceImageCtx = sourceImageCanvas.getContext("2d");
+const enablePhotometric = document.getElementById("enablePhotometric");
+const brightnessRange = document.getElementById("brightnessRange");
+const contrastMin = document.getElementById("contrastMin");
+const contrastMax = document.getElementById("contrastMax");
+const gammaMin = document.getElementById("gammaMin");
+const gammaMax = document.getElementById("gammaMax");
 
-let draggingPoint = -1;
+const enableLighting = document.getElementById("enableLighting");
+const lightingChecks = [...document.querySelectorAll(".lighting-check")];
+const lightStrengthRange = document.getElementById("lightStrengthRange");
 
-let points = [
-  {x:120, y:80,  color:"#ef4444", name:"P1 top-left"},
-  {x:520, y:90,  color:"#22c55e", name:"P2 top-right"},
-  {x:540, y:330, color:"#3b82f6", name:"P3 bottom-right"},
-  {x:100, y:350, color:"#facc15", name:"P4 bottom-left"}
-];
+const transVal = document.getElementById("transVal");
+const rotVal = document.getElementById("rotVal");
+const scaleVal = document.getElementById("scaleVal");
+const shearVal = document.getElementById("shearVal");
+const perspVal = document.getElementById("perspVal");
 
-fileInput.addEventListener("change", handleImageUpload);
+const brightnessVal = document.getElementById("brightnessVal");
+const contrastVal = document.getElementById("contrastVal");
+const gammaVal = document.getElementById("gammaVal");
+const lightStrengthVal = document.getElementById("lightStrengthVal");
 
-sourceCanvas.addEventListener("mousedown", startDrag);
-sourceCanvas.addEventListener("mousemove", dragPoint);
-sourceCanvas.addEventListener("mouseup", endDrag);
-sourceCanvas.addEventListener("mouseleave", endDrag);
+const selectAll = document.getElementById("selectAll");
+const transformChecks = [...document.querySelectorAll(".transform-check")];
 
-sourceCanvas.addEventListener("touchstart", startDragTouch, {passive:false});
-sourceCanvas.addEventListener("touchmove", dragPointTouch, {passive:false});
-sourceCanvas.addEventListener("touchend", endDrag);
+let sourceImage = null;
+let sourceCanvas = document.createElement("canvas");
+let sourceCtx = sourceCanvas.getContext("2d");
+let generatedImages = [];
 
-document.getElementById("outWidth").addEventListener("input", updateWarp);
-document.getElementById("outHeight").addEventListener("input", updateWarp);
-document.getElementById("autoAspect").addEventListener("change", updateWarp);
-document.getElementById("interpMode").addEventListener("change", updateWarp);
-document.getElementById("sharpenToggle").addEventListener("change", updateWarp);
+function updateLabels(){
+  transVal.textContent = `${transRange.value} px`;
+  rotVal.textContent = `${rotRange.value}°`;
 
-initBlank();
+  let sMin = parseFloat(scaleMin.value);
+  let sMax = parseFloat(scaleMax.value);
+  if(sMin > sMax){ [sMin, sMax] = [sMax, sMin]; }
+  scaleVal.textContent = `${sMin.toFixed(2)} ~ ${sMax.toFixed(2)}`;
 
-function initBlank(){
-  srcCtx.fillStyle = "#f8fafc";
-  srcCtx.fillRect(0,0,sourceCanvas.width,sourceCanvas.height);
-  srcCtx.fillStyle = "#334155";
-  srcCtx.font = "bold 26px Segoe UI";
-  srcCtx.textAlign = "center";
-  srcCtx.fillText("Please load an image", sourceCanvas.width/2, sourceCanvas.height/2);
-  srcCtx.textAlign = "left";
+  shearVal.textContent = parseFloat(shearRange.value).toFixed(2);
+  perspVal.textContent = parseFloat(perspRange.value).toFixed(4);
 
-  outCtx.fillStyle = "#f8fafc";
-  outCtx.fillRect(0,0,outputCanvas.width,outputCanvas.height);
-  outCtx.fillStyle = "#334155";
-  outCtx.font = "bold 24px Segoe UI";
-  outCtx.textAlign = "center";
-  outCtx.fillText("Rectified image will appear here", outputCanvas.width/2, outputCanvas.height/2);
-  outCtx.textAlign = "left";
+  brightnessVal.textContent = `±${brightnessRange.value}`;
 
-  updatePointList();
+  let cMin = parseFloat(contrastMin.value);
+  let cMax = parseFloat(contrastMax.value);
+  if(cMin > cMax){ [cMin, cMax] = [cMax, cMin]; }
+  contrastVal.textContent = `${cMin.toFixed(2)} ~ ${cMax.toFixed(2)}`;
+
+  let gMin = parseFloat(gammaMin.value);
+  let gMax = parseFloat(gammaMax.value);
+  if(gMin > gMax){ [gMin, gMax] = [gMax, gMin]; }
+  gammaVal.textContent = `${gMin.toFixed(2)} ~ ${gMax.toFixed(2)}`;
+
+  lightStrengthVal.textContent = parseFloat(lightStrengthRange.value).toFixed(2);
 }
 
-function handleImageUpload(e){
+[
+  transRange, rotRange, scaleMin, scaleMax, shearRange, perspRange,
+  brightnessRange, contrastMin, contrastMax, gammaMin, gammaMax,
+  lightStrengthRange
+].forEach(el => el.addEventListener("input", updateLabels));
+
+selectAll.addEventListener("change", () => {
+  transformChecks.forEach(c => c.checked = selectAll.checked);
+});
+
+transformChecks.forEach(c => {
+  c.addEventListener("change", () => {
+    selectAll.checked = transformChecks.length > 0 && transformChecks.every(x => x.checked);
+  });
+});
+
+fileInput.addEventListener("change", e => {
   const file = e.target.files[0];
   if(!file) return;
 
   const reader = new FileReader();
-
   reader.onload = ev => {
     const img = new Image();
-
     img.onload = () => {
-      const maxW = 760;
-      const maxH = 520;
-      const scale = Math.min(maxW / img.width, maxH / img.height, 1);
-
-      const w = Math.round(img.width * scale);
-      const h = Math.round(img.height * scale);
-
-      sourceCanvas.width = w;
-      sourceCanvas.height = h;
-
-      sourceImageCanvas.width = w;
-      sourceImageCanvas.height = h;
-      sourceImageCtx.clearRect(0,0,w,h);
-      sourceImageCtx.drawImage(img,0,0,w,h);
-
-      imageLoaded = true;
-
-      resetPoints();
-      statusBox.textContent = "Image loaded. Drag the 4 corner points to define the source quadrilateral.";
+      sourceImage = img;
+      prepareSourceImage(img);
+      drawOriginal();
+      drawPreviewMessage("請先選擇至少一種幾何變換，再按「產生變換照片」");
+      resultGrid.innerHTML = "";
+      generatedImages = [];
     };
-
     img.src = ev.target.result;
   };
-
   reader.readAsDataURL(file);
+});
+
+document.getElementById("generateBtn").addEventListener("click", generateImages);
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  resultGrid.innerHTML = "";
+  generatedImages = [];
+  drawPreviewMessage("結果已清除");
+});
+
+document.getElementById("downloadZipBtn").addEventListener("click", downloadAllAsZip);
+
+function prepareSourceImage(img){
+  const maxW = 900;
+  const maxH = 650;
+  const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+
+  sourceCanvas.width = Math.round(img.width * scale);
+  sourceCanvas.height = Math.round(img.height * scale);
+
+  sourceCtx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+  sourceCtx.drawImage(img, 0, 0, sourceCanvas.width, sourceCanvas.height);
+
+  originalCanvas.width = sourceCanvas.width;
+  originalCanvas.height = sourceCanvas.height;
+  previewCanvas.width = sourceCanvas.width;
+  previewCanvas.height = sourceCanvas.height;
 }
 
-function resetPoints(){
+function drawOriginal(){
+  const ctx = originalCanvas.getContext("2d");
+  ctx.clearRect(0,0,originalCanvas.width,originalCanvas.height);
+  ctx.fillStyle = "#f8fafc";
+  ctx.fillRect(0,0,originalCanvas.width,originalCanvas.height);
+  ctx.drawImage(sourceCanvas,0,0);
+}
+
+function drawPreviewMessage(text){
+  const ctx = previewCanvas.getContext("2d");
+  ctx.clearRect(0,0,previewCanvas.width,previewCanvas.height);
+  ctx.fillStyle = "#f8fafc";
+  ctx.fillRect(0,0,previewCanvas.width,previewCanvas.height);
+  ctx.fillStyle = "#334155";
+  ctx.font = "bold 24px Segoe UI";
+  ctx.textAlign = "center";
+  wrapText(ctx, text, previewCanvas.width / 2, previewCanvas.height / 2 - 20, previewCanvas.width * 0.85, 34);
+  ctx.textAlign = "left";
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight){
+  const chars = text.split("");
+  let line = "";
+  const lines = [];
+
+  for(let i = 0; i < chars.length; i++){
+    const testLine = line + chars[i];
+    if(ctx.measureText(testLine).width > maxWidth && i > 0){
+      lines.push(line);
+      line = chars[i];
+    }else{
+      line = testLine;
+    }
+  }
+  lines.push(line);
+
+  const startY = y - ((lines.length - 1) * lineHeight / 2);
+  lines.forEach((l, idx) => {
+    ctx.fillText(l, x, startY + idx * lineHeight);
+  });
+}
+
+function getSelectedTransforms(){
+  return transformChecks.filter(c => c.checked).map(c => c.value);
+}
+
+function random(min,max){
+  return min + Math.random() * (max - min);
+}
+
+function randomSigned(max){
+  return random(-max, max);
+}
+
+function degToRad(d){
+  return d * Math.PI / 180;
+}
+
+function getParams(){
+  let sMin = parseFloat(scaleMin.value);
+  let sMax = parseFloat(scaleMax.value);
+  if(sMin > sMax){ [sMin, sMax] = [sMax, sMin]; }
+
+  return {
+    trans: parseFloat(transRange.value),
+    rot: parseFloat(rotRange.value),
+    scaleMin: sMin,
+    scaleMax: sMax,
+    shear: parseFloat(shearRange.value),
+    persp: parseFloat(perspRange.value)
+  };
+}
+
+function generateImages(){
+  if(!sourceImage){
+    alert("請先載入一張照片。");
+    return;
+  }
+
+  const selected = getSelectedTransforms();
+  if(selected.length === 0){
+    alert("請至少選擇一種幾何變換。");
+    return;
+  }
+
+  const count = Math.max(1, Math.min(200, parseInt(countInput.value || "50")));
+  resultGrid.innerHTML = "";
+  generatedImages = [];
+
+  for(let i = 0; i < count; i++){
+    const type = selected[Math.floor(Math.random() * selected.length)];
+    const config = makeRandomTransform(type);
+
+    const geometricOut = applyHomography(sourceCanvas, config.H);
+    const effectConfig = makeRandomEffects();
+    const out = applyEffectsToCanvas(geometricOut, effectConfig);
+
+    if(i === 0){
+      previewCanvas.width = out.width;
+      previewCanvas.height = out.height;
+      const pctx = previewCanvas.getContext("2d");
+      pctx.clearRect(0, 0, out.width, out.height);
+      pctx.drawImage(out, 0, 0);
+    }
+
+    const mergedMeta = config.meta + "\n" + effectConfig.meta;
+
+    generatedImages.push({
+      index: i + 1,
+      type: type,
+      meta: mergedMeta,
+      canvas: out
+    });
+
+    addResultCard(out, i + 1, type, mergedMeta);
+  }
+}
+
+function makeRandomTransform(type){
+  const p = getParams();
   const w = sourceCanvas.width;
   const h = sourceCanvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
 
-  points = [
-    {x:w*0.20, y:h*0.18, color:"#ef4444", name:"P1 top-left"},
-    {x:w*0.80, y:h*0.18, color:"#22c55e", name:"P2 top-right"},
-    {x:w*0.82, y:h*0.82, color:"#3b82f6", name:"P3 bottom-right"},
-    {x:w*0.18, y:h*0.82, color:"#facc15", name:"P4 bottom-left"}
-  ];
+  const tx = randomSigned(p.trans);
+  const ty = randomSigned(p.trans);
+  const theta = degToRad(randomSigned(p.rot));
 
-  drawSource();
-  updateWarp();
+  let H = identity();
+  let meta = `Geometry: ${type}`;
+
+  if(type === "translation"){
+    H = translate(tx, ty);
+    meta += `\ntx = ${tx.toFixed(1)}, ty = ${ty.toFixed(1)}`;
+  }
+
+  if(type === "euclidean"){
+    H = aroundCenter(cx, cy,
+      multiply(
+        translate(tx, ty),
+        rotate(theta)
+      )
+    );
+    meta += `\nθ = ${(theta * 180 / Math.PI).toFixed(1)}°`;
+    meta += `\ntx = ${tx.toFixed(1)}, ty = ${ty.toFixed(1)}`;
+  }
+
+  if(type === "similarity"){
+    const s = random(p.scaleMin, p.scaleMax);
+    H = aroundCenter(cx, cy,
+      multiply(
+        translate(tx, ty),
+        multiply(
+          rotate(theta),
+          scale(s, s)
+        )
+      )
+    );
+    meta += `\ns = ${s.toFixed(2)}`;
+    meta += `\nθ = ${(theta * 180 / Math.PI).toFixed(1)}°`;
+    meta += `\ntx = ${tx.toFixed(1)}, ty = ${ty.toFixed(1)}`;
+  }
+
+  if(type === "affine"){
+    const sx = random(p.scaleMin, p.scaleMax);
+    const sy = random(p.scaleMin, p.scaleMax);
+    const shx = randomSigned(p.shear);
+    const shy = randomSigned(p.shear);
+
+    H = aroundCenter(cx, cy,
+      multiply(
+        translate(tx, ty),
+        multiply(
+          rotate(theta),
+          multiply(
+            shear(shx, shy),
+            scale(sx, sy)
+          )
+        )
+      )
+    );
+    meta += `\nsx = ${sx.toFixed(2)}, sy = ${sy.toFixed(2)}`;
+    meta += `\nθ = ${(theta * 180 / Math.PI).toFixed(1)}°`;
+    meta += `\nshear = (${shx.toFixed(2)}, ${shy.toFixed(2)})`;
+    meta += `\ntx = ${tx.toFixed(1)}, ty = ${ty.toFixed(1)}`;
+  }
+
+  if(type === "projective"){
+    const sx = random(p.scaleMin, p.scaleMax);
+    const sy = random(p.scaleMin, p.scaleMax);
+    const shx = randomSigned(p.shear * 0.6);
+    const px = randomSigned(p.persp);
+    const py = randomSigned(p.persp);
+
+    H = aroundCenter(cx, cy,
+      multiply(
+        translate(tx, ty),
+        multiply(
+          projective(px, py),
+          multiply(
+            rotate(theta),
+            multiply(
+              shear(shx, 0),
+              scale(sx, sy)
+            )
+          )
+        )
+      )
+    );
+    meta += `\nsx = ${sx.toFixed(2)}, sy = ${sy.toFixed(2)}`;
+    meta += `\nθ = ${(theta * 180 / Math.PI).toFixed(1)}°`;
+    meta += `\nshearX = ${shx.toFixed(2)}`;
+    meta += `\nperspective = (${px.toFixed(4)}, ${py.toFixed(4)})`;
+    meta += `\ntx = ${tx.toFixed(1)}, ty = ${ty.toFixed(1)}`;
+  }
+
+  return { H, meta };
 }
 
-function autoDocumentPreset(){
-  const w = sourceCanvas.width;
-  const h = sourceCanvas.height;
+function makeRandomEffects(){
+  const cfg = {
+    usePhotometric: enablePhotometric.checked,
+    useLighting: enableLighting.checked,
+    brightness: 0,
+    contrast: 1,
+    gamma: 1,
+    lightingMode: "none",
+    lightStrength: parseFloat(lightStrengthRange.value),
+    meta: ""
+  };
 
-  points = [
-    {x:w*0.24, y:h*0.14, color:"#ef4444", name:"P1 top-left"},
-    {x:w*0.76, y:h*0.20, color:"#22c55e", name:"P2 top-right"},
-    {x:w*0.84, y:h*0.86, color:"#3b82f6", name:"P3 bottom-right"},
-    {x:w*0.15, y:h*0.78, color:"#facc15", name:"P4 bottom-left"}
-  ];
+  if(cfg.usePhotometric){
+    let cMin = parseFloat(contrastMin.value);
+    let cMax = parseFloat(contrastMax.value);
+    if(cMin > cMax){ [cMin, cMax] = [cMax, cMin]; }
 
-  drawSource();
-  updateWarp();
-}
+    let gMin = parseFloat(gammaMin.value);
+    let gMax = parseFloat(gammaMax.value);
+    if(gMin > gMax){ [gMin, gMax] = [gMax, gMin]; }
 
-function drawSource(){
-  srcCtx.clearRect(0,0,sourceCanvas.width,sourceCanvas.height);
+    cfg.brightness = randomSigned(parseFloat(brightnessRange.value));
+    cfg.contrast = random(cMin, cMax);
+    cfg.gamma = random(gMin, gMax);
+  }
 
-  if(imageLoaded){
-    srcCtx.drawImage(sourceImageCanvas,0,0);
+  if(cfg.useLighting){
+    const selectedLights = lightingChecks.filter(c => c.checked).map(c => c.value);
+    if(selectedLights.length > 0){
+      cfg.lightingMode = selectedLights[Math.floor(Math.random() * selectedLights.length)];
+    }
+  }
+
+  const lines = [];
+  lines.push("Photometric / Lighting:");
+  if(cfg.usePhotometric){
+    lines.push(`brightness = ${cfg.brightness.toFixed(1)}`);
+    lines.push(`contrast = ${cfg.contrast.toFixed(2)}`);
+    lines.push(`gamma = ${cfg.gamma.toFixed(2)}`);
   }else{
-    srcCtx.fillStyle = "#f8fafc";
-    srcCtx.fillRect(0,0,sourceCanvas.width,sourceCanvas.height);
+    lines.push("photometric = off");
   }
 
-  drawQuadrilateral();
-  drawPoints();
-  updatePointList();
-}
-
-function drawQuadrilateral(){
-  srcCtx.save();
-
-  srcCtx.lineWidth = 4;
-  srcCtx.strokeStyle = "rgba(255,255,255,0.95)";
-  srcCtx.beginPath();
-  srcCtx.moveTo(points[0].x, points[0].y);
-  for(let i=1;i<4;i++){
-    srcCtx.lineTo(points[i].x, points[i].y);
+  if(cfg.useLighting && cfg.lightingMode !== "none"){
+    lines.push(`lighting = ${cfg.lightingMode}`);
+    lines.push(`lightStrength = ${cfg.lightStrength.toFixed(2)}`);
+  }else{
+    lines.push("lighting = off");
   }
-  srcCtx.closePath();
-  srcCtx.stroke();
 
-  srcCtx.lineWidth = 2;
-  srcCtx.strokeStyle = "#0f172a";
-  srcCtx.setLineDash([8,6]);
-  srcCtx.beginPath();
-  srcCtx.moveTo(points[0].x, points[0].y);
-  for(let i=1;i<4;i++){
-    srcCtx.lineTo(points[i].x, points[i].y);
-  }
-  srcCtx.closePath();
-  srcCtx.stroke();
-
-  srcCtx.restore();
+  cfg.meta = lines.join("\n");
+  return cfg;
 }
 
-function drawPoints(){
-  srcCtx.save();
+function applyEffectsToCanvas(inputCanvas, cfg){
+  const w = inputCanvas.width;
+  const h = inputCanvas.height;
 
-  points.forEach((p, i) => {
-    srcCtx.beginPath();
-    srcCtx.arc(p.x, p.y, 11, 0, Math.PI*2);
-    srcCtx.fillStyle = p.color;
-    srcCtx.fill();
-    srcCtx.lineWidth = 4;
-    srcCtx.strokeStyle = "white";
-    srcCtx.stroke();
+  const out = document.createElement("canvas");
+  out.width = w;
+  out.height = h;
 
-    srcCtx.fillStyle = "white";
-    srcCtx.font = "bold 13px Segoe UI";
-    srcCtx.textAlign = "center";
-    srcCtx.textBaseline = "middle";
-    srcCtx.fillText(String(i+1), p.x, p.y);
+  const inCtx = inputCanvas.getContext("2d");
+  const outCtx = out.getContext("2d");
 
-    srcCtx.textAlign = "left";
-    srcCtx.textBaseline = "alphabetic";
-    srcCtx.font = "bold 15px Segoe UI";
-    srcCtx.fillStyle = "#0f172a";
-    srcCtx.strokeStyle = "white";
-    srcCtx.lineWidth = 4;
-    srcCtx.strokeText(`P${i+1}`, p.x + 14, p.y - 14);
-    srcCtx.fillText(`P${i+1}`, p.x + 14, p.y - 14);
-  });
+  const img = inCtx.getImageData(0, 0, w, h);
+  const data = img.data;
 
-  srcCtx.restore();
-}
+  for(let y = 0; y < h; y++){
+    for(let x = 0; x < w; x++){
+      const idx = (y * w + x) * 4;
 
-function updatePointList(){
-  pointListEl.innerHTML = "";
+      let r = data[idx];
+      let g = data[idx + 1];
+      let b = data[idx + 2];
+      let a = data[idx + 3];
 
-  points.forEach((p, i) => {
-    const row = document.createElement("div");
-    row.className = "point-row";
-    row.innerHTML = `
-      <b style="color:${p.color};">P${i+1}</b>
-      <span>x=${p.x.toFixed(1)}, y=${p.y.toFixed(1)}</span>
-    `;
-    pointListEl.appendChild(row);
-  });
-}
+      if(a === 0) continue;
 
-function getCanvasMousePos(event){
-  const rect = sourceCanvas.getBoundingClientRect();
-  const scaleX = sourceCanvas.width / rect.width;
-  const scaleY = sourceCanvas.height / rect.height;
+      if(cfg.usePhotometric){
+        r = applyBrightnessContrastGamma(r, cfg.brightness, cfg.contrast, cfg.gamma);
+        g = applyBrightnessContrastGamma(g, cfg.brightness, cfg.contrast, cfg.gamma);
+        b = applyBrightnessContrastGamma(b, cfg.brightness, cfg.contrast, cfg.gamma);
+      }
 
-  return {
-    x:(event.clientX - rect.left) * scaleX,
-    y:(event.clientY - rect.top) * scaleY
-  };
-}
+      if(cfg.useLighting && cfg.lightingMode !== "none"){
+        const factor = getLightingFactor(x, y, w, h, cfg.lightingMode, cfg.lightStrength);
+        r = clamp(r * factor);
+        g = clamp(g * factor);
+        b = clamp(b * factor);
+      }
 
-function getCanvasTouchPos(event){
-  const touch = event.touches[0];
-  const rect = sourceCanvas.getBoundingClientRect();
-  const scaleX = sourceCanvas.width / rect.width;
-  const scaleY = sourceCanvas.height / rect.height;
-
-  return {
-    x:(touch.clientX - rect.left) * scaleX,
-    y:(touch.clientY - rect.top) * scaleY
-  };
-}
-
-function startDrag(event){
-  const pos = getCanvasMousePos(event);
-  draggingPoint = findNearestPoint(pos.x, pos.y);
-}
-
-function dragPoint(event){
-  if(draggingPoint < 0) return;
-
-  const pos = getCanvasMousePos(event);
-  movePoint(draggingPoint, pos.x, pos.y);
-}
-
-function startDragTouch(event){
-  event.preventDefault();
-  const pos = getCanvasTouchPos(event);
-  draggingPoint = findNearestPoint(pos.x, pos.y);
-}
-
-function dragPointTouch(event){
-  event.preventDefault();
-  if(draggingPoint < 0) return;
-
-  const pos = getCanvasTouchPos(event);
-  movePoint(draggingPoint, pos.x, pos.y);
-}
-
-function endDrag(){
-  draggingPoint = -1;
-}
-
-function findNearestPoint(x,y){
-  let best = -1;
-  let bestDist = 999999;
-
-  points.forEach((p,i) => {
-    const dx = p.x - x;
-    const dy = p.y - y;
-    const d = Math.sqrt(dx*dx + dy*dy);
-
-    if(d < bestDist){
-      bestDist = d;
-      best = i;
-    }
-  });
-
-  return bestDist <= 28 ? best : -1;
-}
-
-function movePoint(index, x, y){
-  points[index].x = clampNumber(x, 0, sourceCanvas.width);
-  points[index].y = clampNumber(y, 0, sourceCanvas.height);
-
-  drawSource();
-  updateWarp();
-}
-
-function estimateOutputSize(){
-  const widthInput = document.getElementById("outWidth");
-  const heightInput = document.getElementById("outHeight");
-  const autoAspect = document.getElementById("autoAspect").checked;
-
-  let outW = clampInt(parseInt(widthInput.value || "900"), 50, 2400);
-  let outH = clampInt(parseInt(heightInput.value || "500"), 50, 2400);
-
-  if(autoAspect){
-    const top = distance(points[0], points[1]);
-    const bottom = distance(points[3], points[2]);
-    const left = distance(points[0], points[3]);
-    const right = distance(points[1], points[2]);
-
-    const avgW = (top + bottom) / 2;
-    const avgH = (left + right) / 2;
-
-    if(avgH > 1){
-      const aspect = avgW / avgH;
-      outH = Math.round(outW / aspect);
-      outH = clampInt(outH, 50, 2400);
-      heightInput.value = outH;
+      data[idx] = r;
+      data[idx + 1] = g;
+      data[idx + 2] = b;
+      data[idx + 3] = a;
     }
   }
 
-  widthInput.value = outW;
-  heightInput.value = outH;
-
-  return {outW, outH};
+  outCtx.putImageData(img, 0, 0);
+  return out;
 }
 
-function updateWarp(){
-  if(!imageLoaded){
-    drawSource();
-    return;
-  }
-
-  const {outW, outH} = estimateOutputSize();
-
-  outputCanvas.width = outW;
-  outputCanvas.height = outH;
-
-  const srcPts = points.map(p => ({x:p.x, y:p.y}));
-
-  const dstPts = [
-    {x:0, y:0},
-    {x:outW-1, y:0},
-    {x:outW-1, y:outH-1},
-    {x:0, y:outH-1}
-  ];
-
-  const H = computeHomographyDLT(srcPts, dstPts);
-  const invH = H ? invert3x3(H) : null;
-
-  if(!H || !invH){
-    statusBox.textContent = "Could not solve H. Please make sure the four points form a valid quadrilateral.";
-    return;
-  }
-
-  renderWarpedImage(invH, outW, outH);
-
-  if(document.getElementById("sharpenToggle").checked){
-    applySharpen(outputCanvas);
-  }
-
-  hMatrixEl.textContent = formatMatrix(H);
-  invMatrixEl.textContent = formatMatrix(invH);
-
-  const aspectInfo = (outW / outH).toFixed(3);
-
-  statusBox.textContent =
-    `DLT solved H successfully. Output size = ${outW} × ${outH}, aspect = ${aspectInfo}. ` +
-    `Rendered by inverse warping and ${document.getElementById("interpMode").value} interpolation.`;
+function applyBrightnessContrastGamma(value, brightness, contrast, gamma){
+  let v = value;
+  v = v + brightness;
+  v = (v - 128) * contrast + 128;
+  v = clamp(v) / 255;
+  v = Math.pow(v, 1 / gamma) * 255;
+  return clamp(v);
 }
 
-function computeHomographyDLT(src, dst){
-  const A = [];
-  const b = [];
+function getLightingFactor(x, y, w, h, mode, strength){
+  const nx = x / Math.max(1, w - 1);
+  const ny = y / Math.max(1, h - 1);
+  let factor = 1;
 
-  for(let i=0; i<4; i++){
-    const x = src[i].x;
-    const y = src[i].y;
-    const u = dst[i].x;
-    const v = dst[i].y;
-
-    A.push([x, y, 1, 0, 0, 0, -u*x, -u*y]);
-    b.push(u);
-
-    A.push([0, 0, 0, x, y, 1, -v*x, -v*y]);
-    b.push(v);
+  if(mode === "left"){
+    factor = 1 + strength * (1 - nx) - strength * 0.5 * nx;
   }
 
-  const h = solveLinearSystem(A, b);
+  if(mode === "right"){
+    factor = 1 + strength * nx - strength * 0.5 * (1 - nx);
+  }
 
-  if(!h) return null;
+  if(mode === "top"){
+    factor = 1 + strength * (1 - ny) - strength * 0.5 * ny;
+  }
 
+  if(mode === "bottom"){
+    factor = 1 + strength * ny - strength * 0.5 * (1 - ny);
+  }
+
+  if(mode === "vignette"){
+    const dx = nx - 0.5;
+    const dy = ny - 0.5;
+    const dist = Math.sqrt(dx * dx + dy * dy) / 0.707;
+    factor = 1 - strength * dist * dist;
+  }
+
+  return Math.max(0.15, factor);
+}
+
+function clamp(v){
+  return Math.max(0, Math.min(255, Math.round(v)));
+}
+
+function identity(){
   return [
-    [h[0], h[1], h[2]],
-    [h[3], h[4], h[5]],
-    [h[6], h[7], 1]
+    [1,0,0],
+    [0,1,0],
+    [0,0,1]
   ];
 }
 
-function solveLinearSystem(A, b){
-  const n = b.length;
-  const M = A.map((row, i) => [...row, b[i]]);
-
-  for(let col=0; col<n; col++){
-    let pivot = col;
-
-    for(let r=col+1; r<n; r++){
-      if(Math.abs(M[r][col]) > Math.abs(M[pivot][col])){
-        pivot = r;
-      }
-    }
-
-    if(Math.abs(M[pivot][col]) < 1e-12){
-      return null;
-    }
-
-    if(pivot !== col){
-      [M[pivot], M[col]] = [M[col], M[pivot]];
-    }
-
-    const div = M[col][col];
-
-    for(let c=col; c<=n; c++){
-      M[col][c] /= div;
-    }
-
-    for(let r=0; r<n; r++){
-      if(r === col) continue;
-
-      const factor = M[r][col];
-
-      for(let c=col; c<=n; c++){
-        M[r][c] -= factor * M[col][c];
-      }
-    }
-  }
-
-  return M.map(row => row[n]);
+function translate(tx,ty){
+  return [
+    [1,0,tx],
+    [0,1,ty],
+    [0,0,1]
+  ];
 }
 
-function invert3x3(M){
+function rotate(a){
+  const c = Math.cos(a);
+  const s = Math.sin(a);
+  return [
+    [c,-s,0],
+    [s,c,0],
+    [0,0,1]
+  ];
+}
+
+function scale(sx,sy){
+  return [
+    [sx,0,0],
+    [0,sy,0],
+    [0,0,1]
+  ];
+}
+
+function shear(shx,shy){
+  return [
+    [1,shx,0],
+    [shy,1,0],
+    [0,0,1]
+  ];
+}
+
+function projective(px,py){
+  return [
+    [1,0,0],
+    [0,1,0],
+    [px,py,1]
+  ];
+}
+
+function multiply(A,B){
+  const C = [
+    [0,0,0],
+    [0,0,0],
+    [0,0,0]
+  ];
+
+  for(let r=0; r<3; r++){
+    for(let c=0; c<3; c++){
+      C[r][c] =
+        A[r][0]*B[0][c] +
+        A[r][1]*B[1][c] +
+        A[r][2]*B[2][c];
+    }
+  }
+  return C;
+}
+
+function aroundCenter(cx,cy,M){
+  return multiply(
+    translate(cx,cy),
+    multiply(
+      M,
+      translate(-cx,-cy)
+    )
+  );
+}
+
+function invert3(M){
   const a=M[0][0], b=M[0][1], c=M[0][2];
   const d=M[1][0], e=M[1][1], f=M[1][2];
   const g=M[2][0], h=M[2][1], i=M[2][2];
@@ -853,18 +1135,17 @@ function invert3x3(M){
   const A = e*i - f*h;
   const B = -(d*i - f*g);
   const C = d*h - e*g;
-
   const D = -(b*i - c*h);
   const E = a*i - c*g;
   const F = -(a*h - b*g);
-
   const G = b*f - c*e;
   const H = -(a*f - c*d);
   const I = a*e - b*d;
 
   const det = a*A + b*B + c*C;
-
-  if(Math.abs(det) < 1e-12) return null;
+  if(Math.abs(det) < 1e-12){
+    return identity();
+  }
 
   return [
     [A/det, D/det, G/det],
@@ -873,25 +1154,56 @@ function invert3x3(M){
   ];
 }
 
-function renderWarpedImage(invH, outW, outH){
-  const srcW = sourceImageCanvas.width;
-  const srcH = sourceImageCanvas.height;
+function applyPoint(H, x, y){
+  const X = H[0][0]*x + H[0][1]*y + H[0][2];
+  const Y = H[1][0]*x + H[1][1]*y + H[1][2];
+  const W = H[2][0]*x + H[2][1]*y + H[2][2];
+  return { x: X / W, y: Y / W };
+}
 
-  const srcData = sourceImageCtx.getImageData(0,0,srcW,srcH);
-  const outData = outCtx.createImageData(outW,outH);
-  const interpMode = document.getElementById("interpMode").value;
+function applyHomography(srcCanvas, H){
+  const w = srcCanvas.width;
+  const h = srcCanvas.height;
+
+  const srcCtx = srcCanvas.getContext("2d");
+  const srcData = srcCtx.getImageData(0,0,w,h);
+
+  const corners = [
+    applyPoint(H, 0, 0),
+    applyPoint(H, w, 0),
+    applyPoint(H, w, h),
+    applyPoint(H, 0, h)
+  ];
+
+  let minX = Math.min(...corners.map(p => p.x));
+  let maxX = Math.max(...corners.map(p => p.x));
+  let minY = Math.min(...corners.map(p => p.y));
+  let maxY = Math.max(...corners.map(p => p.y));
+
+  const margin = 30;
+  minX -= margin;
+  maxX += margin;
+  minY -= margin;
+  maxY += margin;
+
+  const outW = Math.max(1, Math.ceil(maxX - minX));
+  const outH = Math.max(1, Math.ceil(maxY - minY));
+
+  const out = document.createElement("canvas");
+  out.width = outW;
+  out.height = outH;
+
+  const outCtx = out.getContext("2d");
+  const outData = outCtx.createImageData(outW, outH);
+
+  const offset = translate(-minX, -minY);
+  const H2 = multiply(offset, H);
+  const invH = invert3(H2);
 
   for(let y=0; y<outH; y++){
     for(let x=0; x<outW; x++){
-      const p = applyHomographyPoint(invH, x, y);
-
-      let color;
-
-      if(interpMode === "nearest"){
-        color = nearestSample(srcData, srcW, srcH, p.x, p.y);
-      }else{
-        color = bilinearSample(srcData, srcW, srcH, p.x, p.y);
-      }
+      const p = applyPoint(invH, x, y);
+      const color = bilinearSample(srcData, w, h, p.x, p.y);
 
       const idx = (y*outW + x)*4;
       outData.data[idx]   = color[0];
@@ -902,28 +1214,9 @@ function renderWarpedImage(invH, outW, outH){
   }
 
   outCtx.putImageData(outData,0,0);
-}
+  drawFrame(outCtx, w, h, H2);
 
-function applyHomographyPoint(H, x, y){
-  const X = H[0][0]*x + H[0][1]*y + H[0][2];
-  const Y = H[1][0]*x + H[1][1]*y + H[1][2];
-  const W = H[2][0]*x + H[2][1]*y + H[2][2];
-
-  return {
-    x:X/W,
-    y:Y/W
-  };
-}
-
-function nearestSample(img, w, h, x, y){
-  const xi = Math.round(x);
-  const yi = Math.round(y);
-
-  if(xi < 0 || yi < 0 || xi >= w || yi >= h){
-    return [245,248,252,255];
-  }
-
-  return getPixel(img, w, xi, yi);
+  return out;
 }
 
 function bilinearSample(img, w, h, x, y){
@@ -965,103 +1258,153 @@ function getPixel(img, w, x, y){
   ];
 }
 
-function applySharpen(canvas){
-  const ctx = canvas.getContext("2d");
-  const w = canvas.width;
-  const h = canvas.height;
-
-  const src = ctx.getImageData(0,0,w,h);
-  const dst = ctx.createImageData(w,h);
-
-  const s = src.data;
-  const d = dst.data;
-
-  const kernel = [
-     0, -1,  0,
-    -1,  5, -1,
-     0, -1,  0
+function drawFrame(ctx, srcW, srcH, H){
+  const corners = [
+    applyPoint(H, 0, 0),
+    applyPoint(H, srcW, 0),
+    applyPoint(H, srcW, srcH),
+    applyPoint(H, 0, srcH)
   ];
 
-  for(let y=0; y<h; y++){
-    for(let x=0; x<w; x++){
-      const idx = (y*w + x)*4;
+  ctx.save();
+  ctx.lineWidth = 5;
+  ctx.strokeStyle = "rgba(239,68,68,.9)";
+  ctx.setLineDash([14,8]);
 
-      if(x === 0 || y === 0 || x === w-1 || y === h-1){
-        d[idx] = s[idx];
-        d[idx+1] = s[idx+1];
-        d[idx+2] = s[idx+2];
-        d[idx+3] = s[idx+3];
-        continue;
-      }
-
-      let r=0, g=0, b=0;
-
-      let ki = 0;
-
-      for(let ky=-1; ky<=1; ky++){
-        for(let kx=-1; kx<=1; kx++){
-          const srcIdx = ((y+ky)*w + (x+kx))*4;
-          const kv = kernel[ki++];
-
-          r += s[srcIdx] * kv;
-          g += s[srcIdx+1] * kv;
-          b += s[srcIdx+2] * kv;
-        }
-      }
-
-      d[idx] = clamp255(r);
-      d[idx+1] = clamp255(g);
-      d[idx+2] = clamp255(b);
-      d[idx+3] = s[idx+3];
-    }
+  ctx.beginPath();
+  ctx.moveTo(corners[0].x, corners[0].y);
+  for(let i=1; i<corners.length; i++){
+    ctx.lineTo(corners[i].x, corners[i].y);
   }
-
-  ctx.putImageData(dst,0,0);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.restore();
 }
 
-function formatMatrix(M){
-  if(!M) return "Matrix cannot be computed.";
+function addResultCard(canvas, index, type, meta){
+  const card = document.createElement("div");
+  card.className = "result-card";
 
-  return M.map(row =>
-    "[ " + row.map(v => {
-      if(Math.abs(v) < 1e-10) v = 0;
-      return v.toFixed(6).padStart(12, " ");
-    }).join("  ") + " ]"
-  ).join("\n");
+  const imgWrap = document.createElement("div");
+  imgWrap.className = "result-image-wrap";
+
+  const shownCanvas = document.createElement("canvas");
+  shownCanvas.width = canvas.width;
+  shownCanvas.height = canvas.height;
+  shownCanvas.getContext("2d").drawImage(canvas,0,0);
+  imgWrap.appendChild(shownCanvas);
+
+  const info = document.createElement("div");
+  info.className = "result-info";
+
+  const title = document.createElement("div");
+  title.className = "result-title";
+  title.innerHTML = `${index}. ${getTypeLabel(type)}`;
+
+  const detail = document.createElement("div");
+  detail.className = "result-meta";
+  detail.textContent = meta;
+
+  const link = document.createElement("a");
+  link.className = "download-btn";
+  link.textContent = "下載 PNG";
+  link.href = canvas.toDataURL("image/png");
+  link.download = `transform_${String(index).padStart(2, "0")}_${type}.png`;
+
+  info.appendChild(title);
+  info.appendChild(detail);
+  info.appendChild(link);
+
+  card.appendChild(imgWrap);
+  card.appendChild(info);
+  resultGrid.appendChild(card);
 }
 
-function downloadWarped(){
-  if(!imageLoaded){
-    alert("Please load an image first.");
+function getTypeLabel(type){
+  const map = {
+    translation: `<span class="t1">Translation 平移</span>`,
+    euclidean: `<span class="t2">Euclidean 歐氏</span>`,
+    similarity: `<span class="t3">Similarity 相似</span>`,
+    affine: `<span class="t4">Affine 仿射</span>`,
+    projective: `<span class="t5">Projective 投影</span>`
+  };
+  return map[type] || type;
+}
+
+async function downloadAllAsZip(){
+  if(generatedImages.length === 0){
+    alert("目前沒有可下載的圖片，請先產生變換照片。");
     return;
   }
 
+  if(typeof JSZip === "undefined"){
+    alert("JSZip 載入失敗，請確認網路可連到 CDN。");
+    return;
+  }
+
+  const zip = new JSZip();
+  const folder = zip.folder("training_augmented_images");
+
+  const summaryLines = [];
+  summaryLines.push("Image Augmentation Playground");
+  summaryLines.push("Generated training images");
+  summaryLines.push("");
+
+  for(const item of generatedImages){
+    const filename = `${String(item.index).padStart(2, "0")}_${item.type}.png`;
+    const blob = await canvasToBlob(item.canvas);
+    folder.file(filename, blob);
+
+    summaryLines.push(filename);
+    summaryLines.push(item.meta);
+    summaryLines.push("");
+  }
+
+  folder.file("transform_parameters_summary.txt", summaryLines.join("\n"));
+
+  const zipBlob = await zip.generateAsync({type:"blob"});
+  const url = URL.createObjectURL(zipBlob);
+
   const a = document.createElement("a");
-  a.href = outputCanvas.toDataURL("image/png");
-  a.download = "rectified_homography_result.png";
+  a.href = url;
+  a.download = "training_augmented_images.zip";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
 }
 
-function distance(a,b){
-  const dx = a.x - b.x;
-  const dy = a.y - b.y;
-  return Math.sqrt(dx*dx + dy*dy);
+function canvasToBlob(canvas){
+  return new Promise(resolve => {
+    canvas.toBlob(blob => resolve(blob), "image/png");
+  });
 }
 
-function clampNumber(v,min,max){
-  return Math.max(min, Math.min(max, v));
+function initBlankCanvas(){
+  const ctx1 = originalCanvas.getContext("2d");
+  const ctx2 = previewCanvas.getContext("2d");
+
+  ctx1.fillStyle = "#f8fafc";
+  ctx1.fillRect(0,0,originalCanvas.width,originalCanvas.height);
+  ctx1.fillStyle = "#334155";
+  ctx1.font = "bold 28px Segoe UI";
+  ctx1.textAlign = "center";
+  ctx1.fillText("請先載入照片", originalCanvas.width / 2, originalCanvas.height / 2);
+
+  ctx2.fillStyle = "#f8fafc";
+  ctx2.fillRect(0,0,previewCanvas.width,previewCanvas.height);
+  ctx2.fillStyle = "#334155";
+  ctx2.font = "bold 24px Segoe UI";
+  ctx2.textAlign = "center";
+  wrapText(ctx2, "請先載入照片，並選擇至少一種幾何變換功能", previewCanvas.width / 2, previewCanvas.height / 2, previewCanvas.width * 0.85, 34);
+
+  ctx1.textAlign = "left";
+  ctx2.textAlign = "left";
 }
 
-function clampInt(v,min,max){
-  if(Number.isNaN(v)) return min;
-  return Math.max(min, Math.min(max, v));
-}
-
-function clamp255(v){
-  return Math.max(0, Math.min(255, Math.round(v)));
-}
+updateLabels();
+initBlankCanvas();
 </script>
 
 </body>
